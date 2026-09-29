@@ -1,0 +1,1479 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Walzerlich — Analyst Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f2ee;
+    --red: #c8102e;
+    --red-dark: #8b0b1f;
+    --red-light: #e8254a;
+    --gray: #1a1a1a;
+    --gray-mid: #2e2e2e;
+    --gray-light: #555;
+    --border: #2a2a2a;
+    --correct: #2e7d32;
+    --wrong: #c62828;
+    --unanswered: #555;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: 
+      repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(200,16,46,0.04) 59px, rgba(200,16,46,0.04) 60px),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(200,16,46,0.04) 59px, rgba(200,16,46,0.04) 60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen {
+    display: none;
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+  }
+  .screen.active { display: flex; }
+
+  /* ─── INTRO SCREEN ─── */
+  #screen-intro {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+
+  .logo-mark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .title-block {
+    position: relative;
+    margin-bottom: 40px;
+  }
+
+  .title-block h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 10vw, 96px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 0.9;
+    color: var(--white);
+  }
+
+  .title-block h1 span {
+    color: var(--red);
+    display: block;
+  }
+
+  .title-underline {
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--red), var(--red-dark));
+    margin-top: 16px;
+  }
+
+  .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--gray-light);
+    margin-bottom: 48px;
+    text-transform: uppercase;
+  }
+
+  .intro-card {
+    background: var(--gray);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--red);
+    padding: 32px 40px;
+    max-width: 560px;
+    width: 100%;
+    margin-bottom: 40px;
+    text-align: left;
+  }
+
+  .intro-card h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .intro-card p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #aaa;
+    margin-bottom: 10px;
+  }
+
+  .intro-card p:last-child { margin-bottom: 0; }
+
+  .intro-stats {
+    display: flex;
+    gap: 0;
+    max-width: 560px;
+    width: 100%;
+    margin-bottom: 48px;
+    border: 1px solid var(--border);
+  }
+
+  .stat {
+    flex: 1;
+    padding: 20px 16px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--red);
+    display: block;
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--gray-light);
+    text-transform: uppercase;
+    margin-top: 4px;
+    display: block;
+  }
+
+  .name-field {
+    max-width: 560px;
+    width: 100%;
+    margin-bottom: 32px;
+  }
+
+  .name-field label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .name-field input {
+    width: 100%;
+    background: var(--gray);
+    border: 1px solid var(--border);
+    border-bottom: 2px solid var(--red);
+    color: var(--white);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 18px;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .name-field input:focus {
+    border-color: var(--red-light);
+    background: var(--gray-mid);
+  }
+
+  .name-field input::placeholder { color: var(--gray-light); }
+
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 16px 48px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: var(--red);
+    color: var(--white);
+  }
+  .btn-primary:hover { background: var(--red-light); transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--white);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--red); color: var(--red); }
+
+  /* ─── QUIZ SCREEN ─── */
+  #screen-quiz {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .quiz-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--black);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    gap: 24px;
+  }
+
+  .quiz-header-left {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    white-space: nowrap;
+  }
+
+  .quiz-header-left span { color: var(--red); }
+
+  .progress-wrap {
+    flex: 1;
+    max-width: 400px;
+  }
+
+  .progress-bar-bg {
+    height: 4px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red-dark), var(--red-light));
+    transition: width 0.3s ease;
+    width: 2%;
+  }
+
+  .progress-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gray-light);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .timer-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+  }
+
+  .timer-icon {
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .timer-display {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--white);
+    transition: color 0.3s;
+  }
+
+  .timer-display.warning { color: #ff6b35; }
+  .timer-display.critical { color: var(--red); animation: flicker 0.5s infinite; }
+
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .quiz-body {
+    flex: 1;
+    padding: 40px 32px 100px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .question-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 3vw, 26px);
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--white);
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 560px) {
+    .options-grid { grid-template-columns: 1fr; }
+  }
+
+  .option-btn {
+    background: var(--gray);
+    border: 1px solid var(--border);
+    color: var(--white);
+    padding: 16px 20px;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.4;
+    transition: all 0.15s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    position: relative;
+  }
+
+  .option-btn:hover {
+    background: var(--gray-mid);
+    border-color: var(--red);
+    transform: translateX(3px);
+  }
+
+  .option-btn.selected {
+    background: rgba(200, 16, 46, 0.12);
+    border-color: var(--red);
+    border-left-width: 3px;
+  }
+
+  .option-letter {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    font-weight: 600;
+    letter-spacing: 1px;
+    min-width: 18px;
+    margin-top: 2px;
+  }
+
+  .open-answer-wrap {
+    margin-bottom: 40px;
+  }
+
+  .open-answer-wrap label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gray-light);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .open-answer-wrap input {
+    width: 100%;
+    background: var(--gray);
+    border: 1px solid var(--border);
+    border-bottom: 2px solid var(--red);
+    color: var(--white);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 20px;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    max-width: 400px;
+  }
+
+  .open-answer-wrap input:focus {
+    border-color: var(--red-light);
+    background: var(--gray-mid);
+  }
+
+  .open-answer-wrap input::placeholder { color: var(--gray-light); font-size: 15px; }
+
+  .quiz-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .nav-info {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gray-light);
+    letter-spacing: 1px;
+  }
+
+  .nav-buttons { display: flex; gap: 12px; }
+
+  /* ─── RESULTS SCREEN ─── */
+  #screen-results {
+    flex-direction: column;
+    padding: 48px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .results-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .results-header .logo-mark { margin-bottom: 16px; }
+
+  .results-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+
+  .results-header h2 span { color: var(--red); }
+
+  .candidate-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--gray-light);
+    text-transform: uppercase;
+  }
+
+  .score-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 48px;
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--red);
+  }
+
+  .score-main {
+    flex: 1;
+    padding: 40px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+
+  .score-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 96px;
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .score-big span { color: var(--red); font-size: 48px; vertical-align: middle; }
+
+  .score-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--gray-light);
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .score-breakdown {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .breakdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+
+  .breakdown-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .dot-correct { background: var(--correct); }
+  .dot-wrong { background: var(--wrong); }
+  .dot-skip { background: var(--unanswered); }
+
+  .breakdown-count {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .breakdown-count.correct { color: #4caf50; }
+  .breakdown-count.wrong { color: var(--red); }
+  .breakdown-count.skip { color: var(--gray-light); }
+
+  @media (max-width: 600px) {
+    .score-card { flex-direction: column; }
+    .score-main { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+
+  .results-section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-transform: uppercase;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+    margin-top: 40px;
+  }
+
+  .results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .result-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 16px;
+    background: var(--gray);
+    border: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .result-row.correct-row { border-left-color: var(--correct); }
+  .result-row.wrong-row { border-left-color: var(--wrong); }
+  .result-row.skip-row { border-left-color: var(--unanswered); }
+
+  .result-q-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--gray-light);
+    min-width: 28px;
+    padding-top: 2px;
+  }
+
+  .result-q-text { flex: 1; }
+
+  .result-q-text .q-text {
+    color: #ccc;
+    margin-bottom: 4px;
+  }
+
+  .result-q-text .your-answer {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--gray-light);
+  }
+
+  .result-q-text .correct-answer {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #4caf50;
+  }
+
+  .result-status {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .status-correct { background: rgba(46,125,50,0.2); color: #4caf50; }
+  .status-wrong { background: rgba(198,40,40,0.2); color: #ef5350; }
+  .status-skip { background: rgba(85,85,85,0.2); color: #888; }
+
+  .export-bar {
+    position: sticky;
+    bottom: 0;
+    background: var(--black);
+    border-top: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    z-index: 50;
+  }
+
+  /* ─── PRINT STYLES ─── */
+  @media print {
+    body { background: white !important; color: black !important; }
+    body::before { display: none; }
+    .quiz-header, .export-bar, #screen-intro, #screen-quiz { display: none !important; }
+    #screen-results { display: flex !important; max-width: 100%; padding: 20px; }
+    .result-row { break-inside: avoid; page-break-inside: avoid; }
+    .export-bar { display: none !important; }
+    .results-header h2, .score-big { color: black !important; }
+    .score-big span { color: #c8102e !important; }
+    .results-section-title { color: #c8102e !important; }
+    .result-row { background: #f5f5f5 !important; border-color: #ddd !important; }
+    .result-q-text .q-text { color: #333 !important; }
+    .result-q-text .your-answer { color: #666 !important; }
+    .result-q-text .correct-answer { color: #2e7d32 !important; }
+    .breakdown-label { color: #333 !important; }
+    .candidate-name { color: #555 !important; }
+    .score-label { color: #555 !important; }
+    .result-q-num { color: #999 !important; }
+    .score-card { border-color: #ddd !important; border-top-color: #c8102e !important; }
+    .score-main { border-color: #ddd !important; }
+    .breakdown-row { border-color: #ddd !important; }
+    .score-breakdown { background: #fafafa !important; }
+    .results-section-title { border-color: #ddd !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── INTRO SCREEN ─── -->
+<div id="screen-intro" class="screen active">
+  <div class="logo-mark">--------------------------</div>
+  <div class="title-block">
+    <h1>The <span>Walzerlich</span></h1>
+    <div class="title-underline"></div>
+  </div>
+  <p class="subtitle">Logic & Analytics Assessment</p>
+
+  <div class="intro-stats">
+    <div class="stat">
+      <span class="stat-num">50</span>
+      <span class="stat-label">Questions</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">15</span>
+      <span class="stat-label">Minutes</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">1 pt</span>
+      <span class="stat-label">Per Correct Answer</span>
+    </div>
+  </div>
+
+  <div class="intro-card">
+    <h3>Before You Begin</h3>
+    <p>This is a timed cognitive assessment. You will have exactly 15 minutes to answer as many of the 50 questions as possible. Work quickly — the pace is intentional.</p>
+    <p>Questions include multiple-choice and short open-answer formats. You will not receive feedback during the quiz. Your score and full summary will appear at the end.</p>
+    <p>There is no penalty for wrong answers — only correct answers earn points. Once the timer starts, it cannot be paused. The assessment may only be taken once.</p>
+  </div>
+
+  <div class="name-field">
+    <label for="candidate-name">Your Full Name</label>
+    <input type="text" id="candidate-name" placeholder="Enter your full name to begin" autocomplete="off" />
+  </div>
+
+  <button class="btn btn-primary" onclick="startQuiz()">Begin Assessment →</button>
+</div>
+
+<!-- ─── QUIZ SCREEN ─── -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-header">
+    <div class="quiz-header-left">The <span>Walzerlich</span></div>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="q-counter">Question 1 of 50</span>
+        <span id="q-answered">0 answered</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+    </div>
+    <div class="timer-block">
+      <div class="timer-icon"></div>
+      <div class="timer-display" id="timer-display">15:00</div>
+    </div>
+  </div>
+
+  <div class="quiz-body">
+    <div class="question-number" id="q-number">Q01</div>
+    <div class="question-text" id="q-text"></div>
+    <div id="q-input-area"></div>
+    <div class="quiz-nav">
+      <span class="nav-info" id="nav-info"></span>
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="prevQuestion()" id="btn-prev">← Back</button>
+        <button class="btn btn-primary" onclick="nextQuestion()" id="btn-next">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── RESULTS SCREEN ─── -->
+<div id="screen-results" class="screen">
+  <div class="results-header">
+    <div class="logo-mark">Assessment Complete</div>
+    <h2>The <span>Walzerlich</span></h2>
+    <div class="candidate-name" id="results-name"></div>
+  </div>
+
+  <div class="score-card">
+    <div class="score-main">
+      <div class="score-big" id="score-big">0<span>/50</span></div>
+      <div class="score-label">Total Score</div>
+    </div>
+    <div class="score-breakdown">
+      <div class="breakdown-row">
+        <div class="breakdown-label"><span class="dot dot-correct"></span>Correct</div>
+        <div class="breakdown-count correct" id="count-correct">0</div>
+      </div>
+      <div class="breakdown-row">
+        <div class="breakdown-label"><span class="dot dot-wrong"></span>Incorrect</div>
+        <div class="breakdown-count wrong" id="count-wrong">0</div>
+      </div>
+      <div class="breakdown-row">
+        <div class="breakdown-label"><span class="dot dot-skip"></span>Not Answered</div>
+        <div class="breakdown-count skip" id="count-skip">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-section-title">✓ Correct Answers</div>
+  <div class="results-list" id="list-correct"></div>
+
+  <div class="results-section-title">✗ Incorrect Answers</div>
+  <div class="results-list" id="list-wrong"></div>
+
+  <div class="results-section-title">— Not Answered</div>
+  <div class="results-list" id="list-skip"></div>
+
+  <div style="height: 80px;"></div>
+</div>
+
+<div id="export-bar" class="export-bar" style="display:none;">
+  <button class="btn btn-secondary" onclick="window.print()">Export PDF / Print Results</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  QUESTION BANK — 50 questions fixed order
+// ═══════════════════════════════════════
+const QUESTIONS = [
+  // ─── MULTIPLE CHOICE (30 questions) ───
+   {
+    type: 'mc',
+    text: 'The word ANALYTICS is to DATA as DIAGNOSIS is to:',
+    options: ['Medicine', 'Symptoms', 'Doctor', 'Treatment'],
+    answer: 1 // Analytics interprets data; diagnosis interprets symptoms
+  },
+  {
+    type: 'mc',
+    text: 'If a train travels 120 miles in 2 hours, then travels the next 90 miles in 90 minutes, what is its overall average speed for the entire journey?',
+    options: ['60 mph', '70 mph', '68 mph', '72 mph'],
+    answer: 0 // 210 miles / 3.5 hours = 60 mph
+  },
+  {
+    type: 'mc',
+    text: 'A store marks up a product by 40%, then offers a 20% discount on the marked price. Compared to the original price, the final price is:',
+    options: ['Lower by 12%', 'Higher by 12%', 'The same', 'Lower by 8%'],
+    answer: 1 // 1.4 × 0.8 = 1.12 → 12% higher
+  },
+  {
+  type: 'open',
+  text: 'A woman has 7 daughters. Each daughter has 1 brother. How many children does the woman have in total?',
+  answer: '8',
+  aliases: ['eight']
+  },
+  {
+    type: 'mc',
+    text: 'A report has 5 sections. Section A is twice as long as Section B. Section B is half as long as Section C. Section C has 20 pages. How many pages total does the report have if Section D and E are each 10 pages?',
+    options: ['70 pages', '75 pages', '80 pages', '65 pages'],
+    answer: 0 // C=20, B=10, A=20, D=10, E=10 → 70
+  },
+  {
+    type: 'mc',
+    text: 'Three analysts can process 300 data records in 5 hours. How many records can 5 analysts process in 3 hours, assuming equal work rates?',
+    options: ['250', '300', '350', '400'],
+    answer: 1 // Rate per analyst per hour = 20. 5 × 20 × 3 = 300
+  },
+  {
+    type: 'mc',
+    text: 'If the pattern continues: 2, 6, 18, 54, ___ — what is the next number?',
+    options: ['108', '162', '216', '270'],
+    answer: 1 // ×3 each time → 162
+  },
+  {
+    type: 'mc',
+    text: 'A team grew its revenue from $2.4M to $3.0M year-over-year. What was the percentage increase?',
+    options: ['20%', '22%', '25%', '28%'],
+    answer: 2 // (0.6/2.4) × 100 = 25%
+  },
+  {
+    type: 'mc',
+    text: 'Which of the following is most useful for showing how a single value changes over time?',
+    options: ['Pie chart', 'Scatter plot', 'Line chart', 'Sankey Diagram'],
+    answer: 2
+  },
+  {
+  type: 'open',
+  text: 'In the sequence M, V, E, M, J, S, U, ___ — what is the next letter?',
+  answer: 'N',
+  aliases: ['n']
+  },
+  {
+    type: 'mc',
+    text: 'You have a dataset with 200 values. The mean is 50 and the median is 62. This suggests the distribution is:',
+    options: ['Symmetric', 'Right-skewed (positively skewed)', 'Left-skewed (negatively skewed)', 'Bimodal'],
+    answer: 2 // Mean < Median → left-skewed
+  },
+  {
+    type: 'mc',
+    text: 'In a meeting, there are 6 people. Every person shakes hands exactly once with every other person. How many handshakes occur?',
+    options: ['12', '15', '18', '30'],
+    answer: 1 // C(6,2) = 15
+  },
+  {
+    type: 'mc',
+    text: 'Which statement best describes correlation?',
+    options: [
+      'Two variables that move together must have a causal relationship',
+      'A correlation of 0 means the two variables have no relationship whatsoever',
+      'Correlation measures the strength and direction of a linear relationship between two variables',
+      'A negative correlation means one variable causes the other to decrease'
+    ],
+    answer: 2
+  },
+  {
+    type: 'mc',
+    text: 'A project costs $80,000 and is expected to return $20,000 per year. Ignoring the time value of money, how many years until break-even?',
+    options: ['3 years', '4 years', '5 years', '6 years'],
+    answer: 1 // 80000/20000 = 4
+  },
+  {
+  type: 'open',
+  text: 'A round cake is cut 3 times in straight lines going all the way through, in any direction. What is the maximum number of pieces you can get?',
+  answer: '8',
+  aliases: ['eight']
+  },
+  {
+    type: 'mc',
+    text: 'A company website had 10,000 visitors in January. Each month it grows by 10%. Approximately how many visitors will it have in April (3 months later)?',
+    options: ['13,000', '13,100', '13,310', '13,500'],
+    answer: 2 // 10000 × 1.1³ = 13,310
+  },
+  {
+    type: 'mc',
+    text: 'Which of the following is an example of qualitative data?',
+    options: ['The number of clicks on an ad', 'Customer satisfaction ratings on a 1\u201310 scale', 'A written review of a product by a customer', 'The time (in seconds) a user spends on a page'],
+    answer: 2
+  },
+  {
+    type: 'mc',
+    text: 'If A is north of B, and C is east of A, and D is south of C, which direction is D from B?',
+    options: ['North-east', 'South-east', 'East', 'North'],
+    answer: 2 // B=(0,0), A=(0,1), C=(1,1), D=(1,0) → D is directly East of B
+  },
+  {
+  type: 'open',
+  text: 'What is the next letter in this sequence: O, T, T, F, F, S, ___?',
+  answer: 'S',
+  aliases: ['s']
+  // One Two Three Four Five Six SEVEN
+  },
+  {
+    type: 'mc',
+    text: 'A media campaign reached 500,000 people. 2% clicked through. Of those, 5% converted to customers. How many new customers were generated?',
+    options: ['100', '500', '1,000', '5,000'],
+    answer: 1 // 500000×0.02=10000; 10000×0.05=500 → index 1
+  },
+  {
+    type: 'mc',
+    text: 'Which metric best captures how much of your audience took a desired action after seeing an ad?',
+    options: ['Impressions', 'Reach', 'Conversion rate', 'Click-through rate'],
+    answer: 2
+  },
+  {
+    type: 'mc',
+    text: 'A box contains 5 red balls and 3 blue balls. You draw one ball at random. What is the probability it is blue?',
+    options: ['3/5', '3/8', '5/8', '1/3'],
+    answer: 1 // 3/8
+  },
+  {
+    type: 'mc',
+    text: 'The following numbers represent weekly sales: 40, 45, 50, 45, 60, 55, 50. What is the mode?',
+    options: ['45', '50', '45 and 50', '60'],
+    answer: 2 // 45 appears twice, 50 appears twice → bimodal
+  },
+  {
+    type: 'mc',
+    text: 'A report shows that ice cream sales and drowning rates both rise in summer. The most accurate conclusion is:',
+    options: [
+      'Eating ice cream increases the risk of drowning',
+      'Both are caused by a third factor: warmer weather and more outdoor activity',
+      'Drowning causes people to buy more ice cream',
+      'There is no relationship between the two variables'
+    ],
+    answer: 1
+  },
+  {
+    type: 'mc',
+    text: 'Which of the following best describes A/B testing?',
+    options: [
+      'Comparing results from two different time periods',
+      'Testing two versions of something with different audience groups to see which performs better',
+      'Running the same test twice to check for consistency',
+      'A method for cleaning duplicate data'
+    ],
+    answer: 1
+  },
+  {
+    type: 'mc',
+    text: 'You are told: "All analysts use data. Some managers use data." Which conclusion is definitely true?',
+    options: [
+      'All managers are analysts',
+      'Some analysts are managers',
+      'No conclusion about the overlap between analysts and managers can be drawn',
+      'All data users are either analysts or managers'
+    ],
+    answer: 2
+  },
+  {
+    type: 'mc',
+    text: 'A dashboard shows a KPI at 87% of target. The target is 2,400 units. How many units were actually achieved?',
+    options: ['2,008 units', '2,088 units', '2,100 units', '2,150 units'],
+    answer: 1 // 2400 × 0.87 = 2088
+  },
+  {
+    type: 'mc',
+    text: 'Which type of chart is best for showing the relationship between two continuous numerical variables?',
+    options: ['Histogram', 'Scatter plot', 'Stacked bar chart', 'Donut chart'],
+    answer: 1
+  },
+  {
+    type: 'mc',
+    text: 'A dataset has values: 10, 20, 20, 30, 100. The mean is significantly higher than the median. Which measure is more representative of the "typical" value here?',
+    options: ['Mean', 'Median', 'Mode', 'Range'],
+    answer: 1 // Outlier (100) skews the mean
+  },
+  {
+    type: 'mc',
+    text: 'You have 4 tasks to complete in any order. How many different orders are possible?',
+    options: ['16', '24', '12', '8'],
+    answer: 1 // 4! = 24
+  },
+
+  // ─── OPEN ANSWER (20 questions) ───
+  {
+    type: 'open',
+    text: 'A rectangle has a length of 14 cm and a width of 9 cm. What is its perimeter, in centimetres?',
+    answer: '46',
+    aliases: ['46 cm', '46cm', 'forty-six', 'forty six']
+  },
+  {
+    type: 'open',
+    text: 'What is 15% of 240?',
+    answer: '36',
+    aliases: ['36.0', 'thirty-six', 'thirty six']
+  },
+  {
+    type: 'open',
+    text: 'If you reverse the word SEGMENT and take the 3rd letter, what letter do you get?',
+    answer: 'E',
+    aliases: ['e']
+    // SEGMENT reversed = TNEMGES → 3rd letter = E
+  },
+  {
+    type: 'open',
+    text: 'A car travels at 60 km/h for 2.5 hours. How many kilometres does it travel?',
+    answer: '150',
+    aliases: ['150 km', '150km', 'one hundred and fifty', 'one hundred fifty']
+  },
+  {
+    type: 'open',
+    text: 'What is the next number in the sequence: 1, 4, 9, 16, 25, ___?',
+    answer: '36',
+    aliases: ['thirty-six', 'thirty six']
+  },
+  {
+    type: 'open',
+    text: 'An item costs $75 after a 25% discount. What was the original price in dollars?',
+    answer: '100',
+    aliases: ['$100', '100 dollars', 'one hundred', 'one hundred dollars']
+  },
+  {
+    type: 'open',
+    text: 'If FRIEND is coded as GSJFOE (each letter shifted forward by one), what is the code for the word CAT?',
+    answer: 'DBU',
+    aliases: ['dbu']
+  },
+  {
+    type: 'open',
+    text: 'A square has a perimeter of 36 cm. What is its area in square centimetres?',
+    answer: '81',
+    aliases: ['81 sq cm', '81cm2', '81 square centimetres', '81 square centimeters', 'eighty-one', 'eighty one']
+  },
+  {
+    type: 'open',
+    text: 'You flip a fair coin 3 times. How many possible outcomes are there in total?',
+    answer: '8',
+    aliases: ['eight']
+  },
+ {
+  type: 'mc',
+  text: 'Which of the following pairs is an exact match?',
+  options: [
+    'Hendricks, A.J. / Hendricks, A.T.',
+    '7734821 / 7734821',
+    '29 Lakeview Dr. / 29 Lakeveiw Dr.',
+    'Q4-2024-REV / Q4-2024-REV.'
+  ],
+  answer: 1
+},
+  {
+    type: 'open',
+    text: 'A company has 240 employees. 1 in 3 work remotely. How many employees work remotely?',
+    answer: '80',
+    aliases: ['eighty']
+  },
+  {
+    type: 'open',
+    text: 'What is the median of this dataset: 3, 7, 2, 9, 5?',
+    answer: '5',
+    aliases: ['five']
+    // Sorted: 2,3,5,7,9 → median = 5
+  },
+  {
+    type: 'open',
+    text: 'If today is Wednesday, what day of the week will it be 100 days from now?',
+    answer: 'Friday',
+    aliases: ['friday', 'FRIDAY', 'Fri']
+    // 100 mod 7 = 2 → Wed + 2 = Friday
+  },
+  {
+    type: 'open',
+    text: 'A tank is 3/4 full. After 60 litres are removed, it is 1/2 full. How many litres does the full tank hold?',
+    answer: '240',
+    aliases: ['240 litres', '240 liters', 'two hundred and forty', 'two hundred forty']
+    // 3/4 - 1/2 = 1/4 of tank = 60L → full = 240L
+  },
+  {
+    type: 'open',
+    text: 'What is the only even prime number?',
+    answer: '2',
+    aliases: ['two']
+  },
+  {
+    type: 'open',
+    text: 'A pizza is cut into 8 equal slices. You eat 3 slices. What percentage of the pizza remains?',
+    answer: '62.5',
+    aliases: ['62.5%', '62.5 percent', '62.50', '62.50%']
+  },
+  {
+    type: 'open',
+    text: 'You invest $1,000 at a simple interest rate of 5% per year. How much interest will you have earned after 4 years?',
+    answer: '200',
+    aliases: ['$200', '200 dollars', 'two hundred', 'two hundred dollars']
+  },
+  {
+    type: 'open',
+    text: 'What is the Roman numeral for 49?',
+    answer: 'XLIX',
+    aliases: ['xlix']
+  },
+  {
+    type: 'open',
+    text: 'A container holds 5 red, 3 blue, and 2 green tokens. One is drawn at random. What is the probability (as a simplified fraction) of drawing a green token?',
+    answer: '1/5',
+    aliases: ['0.2', '20%', '2/10', 'one fifth', 'one-fifth']
+  },
+  {
+    type: 'open',
+    text: 'A number is multiplied by 3, then 7 is added, giving a result of 28. What is the original number?',
+    answer: '7',
+    aliases: ['seven']
+    // 3x + 7 = 28 → 3x = 21 → x = 7
+  }
+];
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+let candidateName = '';
+let currentQ = 0;
+let userAnswers = new Array(50).fill(null); // null = unanswered, index for MC, string for open
+let timerInterval = null;
+let secondsLeft = 15 * 60;
+let quizStarted = false;
+let quizDone = false;
+
+// ═══════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════
+function levenshtein(a, b) {
+  a = a.toLowerCase().trim();
+  b = b.toLowerCase().trim();
+  if (a === b) return 0;
+  const dp = Array.from({length: a.length + 1}, (_, i) => [i]);
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    }
+  }
+  return dp[a.length][b.length];
+}
+
+function isOpenAnswerCorrect(userInput, q) {
+  if (!userInput || userInput.trim() === '') return false;
+  const u = userInput.toLowerCase().trim();
+  const correct = q.answer.toLowerCase().trim();
+  const aliases = (q.aliases || []).map(a => a.toLowerCase().trim());
+  
+  if (u === correct) return true;
+  if (aliases.includes(u)) return true;
+  
+  // Allow slight misspelling: levenshtein distance ≤ 1 for answers > 3 chars
+  if (correct.length > 3 && levenshtein(u, correct) <= 1) return true;
+  for (const alias of aliases) {
+    if (alias.length > 3 && levenshtein(u, alias) <= 1) return true;
+  }
+  return false;
+}
+
+function isMCCorrect(userAnswer, q) {
+  return userAnswer === q.answer;
+}
+
+function isCorrect(i) {
+  const q = QUESTIONS[i];
+  const ua = userAnswers[i];
+  if (ua === null) return false;
+  if (q.type === 'mc') return isMCCorrect(ua, q);
+  return isOpenAnswerCorrect(ua, q);
+}
+
+function answeredCount() {
+  return userAnswers.filter(a => a !== null && a !== '').length;
+}
+
+// ═══════════════════════════════════════
+//  TIMER
+// ═══════════════════════════════════════
+function startTimer() {
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    updateTimerDisplay();
+    if (secondsLeft <= 0) {
+      clearInterval(timerInterval);
+      endQuiz();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(secondsLeft / 60);
+  const s = secondsLeft % 60;
+  const el = document.getElementById('timer-display');
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.className = 'timer-display';
+  if (secondsLeft <= 60) el.classList.add('critical');
+  else if (secondsLeft <= 180) el.classList.add('warning');
+}
+
+// ═══════════════════════════════════════
+//  QUIZ FLOW
+// ═══════════════════════════════════════
+function startQuiz() {
+  const nameInput = document.getElementById('candidate-name');
+  if (!nameInput.value.trim()) {
+    nameInput.style.borderBottomColor = '#ff4444';
+    nameInput.placeholder = 'Please enter your name to continue';
+    nameInput.focus();
+    return;
+  }
+  candidateName = nameInput.value.trim();
+  quizStarted = true;
+
+  showScreen('screen-quiz');
+  renderQuestion(0);
+  startTimer();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function saveCurrentAnswer() {
+  const q = QUESTIONS[currentQ];
+  if (q.type === 'mc') {
+    // Answer saved on click
+  } else {
+    const inp = document.getElementById('open-input');
+    if (inp) {
+      const val = inp.value.trim();
+      userAnswers[currentQ] = val === '' ? null : val;
+    }
+  }
+}
+
+function renderQuestion(index) {
+  currentQ = index;
+  const q = QUESTIONS[index];
+  const num = index + 1;
+
+  document.getElementById('q-number').textContent = `Q${String(num).padStart(2,'0')}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-counter').textContent = `Question ${num} of 50`;
+  document.getElementById('q-answered').textContent = `${answeredCount()} answered`;
+
+  const fillPct = Math.max(2, (num / 50) * 100);
+  document.getElementById('progress-fill').style.width = fillPct + '%';
+
+  const area = document.getElementById('q-input-area');
+  area.innerHTML = '';
+
+  if (q.type === 'mc') {
+    const grid = document.createElement('div');
+    grid.className = 'options-grid';
+    const letters = ['A', 'B', 'C', 'D'];
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn' + (userAnswers[currentQ] === i ? ' selected' : '');
+      btn.innerHTML = `<span class="option-letter">${letters[i]}.</span><span>${opt}</span>`;
+      btn.onclick = () => {
+        userAnswers[currentQ] = i;
+        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('q-answered').textContent = `${answeredCount()} answered`;
+      };
+      grid.appendChild(btn);
+    });
+    area.appendChild(grid);
+  } else {
+    const wrap = document.createElement('div');
+    wrap.className = 'open-answer-wrap';
+    wrap.innerHTML = `<label>Your Answer</label><input type="text" id="open-input" autocomplete="off" placeholder="Type your answer here…" />`;
+    area.appendChild(wrap);
+    const inp = document.getElementById('open-input');
+    if (userAnswers[currentQ] !== null) inp.value = userAnswers[currentQ];
+    inp.addEventListener('input', () => {
+      const val = inp.value.trim();
+      userAnswers[currentQ] = val === '' ? null : val;
+      document.getElementById('q-answered').textContent = `${answeredCount()} answered`;
+    });
+    inp.focus();
+  }
+
+  // Nav info
+  const skipped = userAnswers.slice(0, index).filter(a => a === null).length;
+  document.getElementById('nav-info').textContent = skipped > 0 ? `${skipped} unanswered before this` : '';
+
+  // Buttons
+  document.getElementById('btn-prev').style.visibility = index === 0 ? 'hidden' : 'visible';
+  document.getElementById('btn-next').textContent = index === 49 ? 'Submit →' : 'Next →';
+}
+
+function nextQuestion() {
+  saveCurrentAnswer();
+  if (currentQ < 49) {
+    renderQuestion(currentQ + 1);
+  } else {
+    endQuiz();
+  }
+}
+
+function prevQuestion() {
+  saveCurrentAnswer();
+  if (currentQ > 0) {
+    renderQuestion(currentQ - 1);
+  }
+}
+
+function endQuiz() {
+  saveCurrentAnswer();
+  quizDone = true;
+  if (timerInterval) clearInterval(timerInterval);
+  buildResults();
+  showScreen('screen-results');
+  document.getElementById('export-bar').style.display = 'flex';
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════
+//  RESULTS
+// ═══════════════════════════════════════
+function buildResults() {
+  document.getElementById('results-name').textContent = candidateName.toUpperCase();
+
+  let correct = 0, wrong = 0, skip = 0;
+  const correctRows = [], wrongRows = [], skipRows = [];
+
+  QUESTIONS.forEach((q, i) => {
+    const ua = userAnswers[i];
+    const num = String(i + 1).padStart(2, '0');
+    const answered = ua !== null && ua !== '';
+
+    if (!answered) {
+      skip++;
+      skipRows.push(buildResultRow(q, i, num, 'skip', null));
+    } else if (isCorrect(i)) {
+      correct++;
+      correctRows.push(buildResultRow(q, i, num, 'correct', ua));
+    } else {
+      wrong++;
+      wrongRows.push(buildResultRow(q, i, num, 'wrong', ua));
+    }
+  });
+
+  document.getElementById('score-big').innerHTML = `${correct}<span>/50</span>`;
+  document.getElementById('count-correct').textContent = correct;
+  document.getElementById('count-wrong').textContent = wrong;
+  document.getElementById('count-skip').textContent = skip;
+
+  const listC = document.getElementById('list-correct');
+  const listW = document.getElementById('list-wrong');
+  const listS = document.getElementById('list-skip');
+
+  listC.innerHTML = correctRows.length ? '' : '<div style="color:var(--gray-light);font-size:13px;padding:12px 0;">None</div>';
+  listW.innerHTML = wrongRows.length ? '' : '<div style="color:var(--gray-light);font-size:13px;padding:12px 0;">None</div>';
+  listS.innerHTML = skipRows.length ? '' : '<div style="color:var(--gray-light);font-size:13px;padding:12px 0;">None</div>';
+
+  correctRows.forEach(r => listC.appendChild(r));
+  wrongRows.forEach(r => listW.appendChild(r));
+  skipRows.forEach(r => listS.appendChild(r));
+}
+
+function getCorrectDisplay(q) {
+  if (q.type === 'mc') return q.options[q.answer];
+  return q.answer;
+}
+
+function getUserDisplay(q, ua) {
+  if (q.type === 'mc') return ua !== null && ua !== undefined ? q.options[ua] : null;
+  return ua;
+}
+
+function buildResultRow(q, i, num, status, ua) {
+  const row = document.createElement('div');
+  row.className = `result-row ${status}-row`;
+
+  const qText = q.text.length > 90 ? q.text.slice(0, 90) + '…' : q.text;
+  const correctDisplay = getCorrectDisplay(q);
+  const userDisplay = getUserDisplay(q, ua);
+
+  let extraHtml = '';
+  if (status === 'wrong') {
+    extraHtml = `
+      <div class="your-answer">Your answer: ${userDisplay || '—'}</div>
+      <div class="correct-answer">Correct: ${correctDisplay}</div>`;
+  } else if (status === 'correct') {
+    extraHtml = `<div class="your-answer">Your answer: ${userDisplay}</div>`;
+  } else {
+    extraHtml = `<div class="correct-answer">Answer: ${correctDisplay}</div>`;
+  }
+
+  const statusLabel = {correct: '✓ CORRECT', wrong: '✗ WRONG', skip: '— SKIPPED'}[status];
+  const statusClass = {correct: 'status-correct', wrong: 'status-wrong', skip: 'status-skip'}[status];
+
+  row.innerHTML = `
+    <div class="result-q-num">Q${num}</div>
+    <div class="result-q-text">
+      <div class="q-text">${qText}</div>
+      ${extraHtml}
+    </div>
+    <div class="result-status ${statusClass}">${statusLabel}</div>`;
+
+  return row;
+}
+
+// ═══════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (!quizStarted || quizDone) return;
+  const q = QUESTIONS[currentQ];
+  if (q.type === 'mc') {
+    const map = {1: 0, 2: 1, 3: 2, 4: 3};
+    if (map[e.key] !== undefined) {
+      saveCurrentAnswer();
+      userAnswers[currentQ] = map[e.key];
+      renderQuestion(currentQ);
+    }
+  }
+  if (e.key === 'Enter' && document.activeElement.id !== 'open-input') {
+    nextQuestion();
+  }
+  if (e.key === 'ArrowRight') nextQuestion();
+  if (e.key === 'ArrowLeft') prevQuestion();
+});
+
+// Enter on name field starts quiz
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('candidate-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startQuiz();
+  });
+});
+</script>
+</body>
+</html>
